@@ -2,25 +2,23 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
-#from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 import os
-
-PORT = int(os.environ.get('PORT', 5000))
+import time
 
 TOKEN = "1193425272:AAEM41GhNs1wZ7Yn762pK8uSL-J1D9icoY8"
-url = "https://www.instagram.com/p/CHNKZVdg_Wd/?igshid=g5qmsw600bfd"
-
-chrome_options = Options()
-chrome_options.add_argument('--headless')
+PORT = int(os.environ.get('PORT', 5000))
+username = os.environ.get("username")
+password = os.environ.get("password")
+##url = "https://www.instagram.com/p/CHNKZVdg_Wd/?igshid=g5qmsw600bfd"
+##url = "https://www.instagram.com/accounts/login/?next=%2Fp%2FCGr21kOsXM2%2F&source=desktop_nav"
 chrome_options = webdriver.ChromeOptions()
 chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 chrome_options.add_argument("--headless")
-#chrome_options.add_argument("--disable-dev-shm-usage")
-#chrome_options.add_argument("--no-sandbox")
-# chrome_options.add_argument('--disable-dev-shm-usage')
-chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--no-sandbox")
 driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-#driver = webdriver.Chrome(ChromeDriverManager(path=os.getcwd()).install(),options=chrome_options)
+
 print("Started")
 def quit(bot,update):
     driver.quit()
@@ -28,6 +26,20 @@ def quit(bot,update):
 def post(bot,update):
     url = update.message.text.replace("/g ","")
     driver.get(url)
+    count = 0
+    while count<10:
+        try:
+            driver.find_element_by_xpath("//*[@aria-label='Phone number, username, or email']").send_keys(username)
+            driver.find_element_by_xpath("//*[@aria-label='Password']").send_keys(password)
+            driver.find_element_by_xpath("//*[@type='submit']").click()
+            time.sleep(2)
+            driver.find_element_by_xpath("//*[@type='button']").click()
+            count = 11
+        
+        except:
+            count+=1
+            time.sleep(1)
+            
     nameele = driver.find_element_by_xpath("//*[@class='sqdOP yWX7d     _8A5w5   ZIAjV ']")
     name = nameele.text
 
@@ -42,6 +54,10 @@ def post(bot,update):
             for i in post[1:len(post)-1]:
                 if len(i) > 0 and "#" in i[0]:
                     hass = hass + i
+                if "#" in i and i[0] != "#":
+                    rep = i.split("#")[0]
+                    string = string+rep
+                    hass = hass + i.replace(rep,"")
                 else:
                     string = string+i+"\n"
 
@@ -75,21 +91,27 @@ Non dimenticatevi di iscrivervi nel gruppo ufficiale su Telegram, trovate il lin
 __
 {hass}"""
     try:
-        if len(string) < 200:
-            
-            bot.send_photo(chat_id=update.message.chat_id,photo=img,caption=msg)
+        bot.send_photo(chat_id=update.message.chat_id,photo=img,caption=msg)
+    except:
 
-        else:
+        try:
             bot.send_photo(chat_id=update.message.chat_id,photo=img)
             bot.send_message(chat_id=update.message.chat_id,text=msg)
-    except:
-        bot.send_message(chat_id=update.message.chat_id,text=msg)
+
+        except:
+            try:
+                bot.send_message(chat_id=update.message.chat_id,text=msg)
+            except:
+                bot.send_message(chat_id=update.message.chat_id,text="ERROR! Post is too long, Telegram is not allowing me to send it.")
 
 updater = Updater(TOKEN)
 dp = updater.dispatcher
 dp.add_handler(CommandHandler("g", post))
 dp.add_handler(CommandHandler("q", quit))
-#dp.add_handler(MessageHandler(Filters.text, fix))
 updater.start_webhook(listen="0.0.0.0",port=int(PORT),url_path=TOKEN)
-updater.bot.setWebhook('https://igtgrgbot.herokuapp.com/' + TOKEN)
+updater.bot.setWebhook('https://igtg.herokuapp.com/' + TOKEN)
 updater.idle()
+#dp.add_handler(MessageHandler(Filters.text, fix))
+##updater.start_polling()
+##updater.idle()
+
