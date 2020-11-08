@@ -24,6 +24,7 @@ def quit(bot,update):
 
 def post(bot,update):
     url = update.message.text.replace("/g ","")
+    update.message.reply_text("Processing your request, please wait a few seconds.")
     driver.get(url)
     count = 0
     while count<10:
