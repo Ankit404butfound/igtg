@@ -212,6 +212,10 @@ def update_form(bot,update):
     except Exception as e:
         print(e)
         update.message.reply_text("Your response could not be updated")
+        
+def empty_lst(bot,update):
+    global user_with_no_uname
+    user_with_no_uname = []
 
 def get_form(bot,update):
     temp_lst = []
@@ -249,7 +253,8 @@ updater.dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_mem
 updater.dispatcher.add_handler(CommandHandler("start",start))
 updater.dispatcher.add_handler(CommandHandler("form",form))
 updater.dispatcher.add_handler(CommandHandler("f",get_form))
-updater.dispatcher.add_handler(CommandHandler("u",update_form))            
+updater.dispatcher.add_handler(CommandHandler("u",update_form))  
+updater.dispatcher.add_handler(CommandHandler("empty",empty_lst))  
 
 
 dp = updater.dispatcher
